@@ -93,6 +93,8 @@ function flipCoin()
         return
     end
 
+    local modifiedBetAmount
+
     local function modifyBetAmountUnique(amount, mailLog)
         local baseAmount = math.floor(amount / 1000) * 1000
         local randomSuffix
