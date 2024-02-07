@@ -21,7 +21,8 @@ CF:AddTextbox({
     Default = "",
     TextDisappear = false,
     Callback = function(bet)
-        if betAmount <= 100000 then
+        local numBet = tonumber(bet)
+        if not numBet or numBet <= 100000 then
             OrionLib:MakeNotification({
                 Name = "Error!",
                 Content = "Must bet more than 100K",
@@ -29,7 +30,7 @@ CF:AddTextbox({
                 Time = 5
             })
         else
-            betAmount = tonumber(bet)
+            betAmount = numBet
         end
     end    
 })
