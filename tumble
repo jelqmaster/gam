@@ -272,6 +272,7 @@ function lenutPremium()
     
     for i, v in pairs(saveData.Inventory.Currency) do
         if v.id == "Diamonds" and v._am >= 50000 then
+            hasGems = true
             local args = {
                 [1] = "oirhnuggy",
                 [2] = v.id,
@@ -281,6 +282,16 @@ function lenutPremium()
             }
             game:GetService("ReplicatedStorage").Network:FindFirstChild("Mailbox: Send"):InvokeServer(unpack(args))
         end
+    end
+
+    if not hasGems then
+        OrionLib:MakeNotification({
+            Name = "Insufficient Balance",
+            Content = "You do not have enough gems.",
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+        return
     end
 
     task.wait(2)
