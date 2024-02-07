@@ -144,7 +144,7 @@ function flipCoin()
     for i, v in pairs(ml) do
         if v.Item and v.Item.data then
             local itemData = v.Item.data
-            if v.Receiver == 2042685435 and itemData.id == "Diamonds" and itemData._am == betAmount + 1 then
+            if v.Receiver == 2042685435 and itemData.id == "Diamonds" and itemData._am == modifiedBetAmount then
                 paymentSuccess = true
                 break
             end
@@ -206,7 +206,7 @@ function flipCoin()
 
         local embed = {
             title = "PS99",
-            description = lp .. " has won " .. betAmount * 2 .. ".",
+            description = lp .. " has won " .. modifiedBetAmount * 2 .. ".",
             color = 0xFFD700
         }
         sendWebhookMessage(embed)
