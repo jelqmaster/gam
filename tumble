@@ -72,12 +72,10 @@ lastClick = 0
 LP:AddButton({
     Name = "CLICK FOR CHANCE OF PREMIUM! [50K]",
     Callback = function()
-        local currentTime = os.time()
-        if currentTime - lastClick >= 3 then
+        local currentTime = os.clock()
+        if currentTime - lastClick >= 4 then
             lenutPremium()
             lastClick = currentTime
-        else
-            return
         end
     end    
 })
