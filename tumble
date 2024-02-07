@@ -87,6 +87,7 @@ function flipCoin()
             end
         end
     end
+    task.wait(1)
     OrionLib:MakeNotification({
         Name = "Flipping...",
         Content = "Flipping Coin.",
