@@ -93,25 +93,20 @@ function flipCoin()
         return
     end
 
-    local modifiedBetAmount
-
-    local function modifyBetAmountUnique(amount, mailLog)
-        local baseAmount = math.floor(amount / 1000) * 1000
-        local randomSuffix
-        local uniqueAmount
-        repeat
-            randomSuffix = math.random(100, 999)
-            uniqueAmount = baseAmount + randomSuffix
-            local isUnique = true
-            for i, v in pairs(mailLog) do
-                if v.Item and v.Item.data and v.Item.data._am == uniqueAmount then
-                    isUnique = false
-                    break
-                end
+    local lp = game.Players.LocalPlayer.Name
+    local gems = nil
+    local leadertab = game.Players.LocalPlayer.leaderstats
+    
+    for _, child in pairs(leadertab:GetChildren()) do
+        if child:IsA("IntValue") then
+            local stats = child.Name:gsub("[^%a]", "")
+            if stats == "Diamonds" then
+                gems = child.Value
             end
-        until isUnique
-        return uniqueAmount
+        end
     end
+
+    initialGem = gems
 
     local GetSave = function()
         return require(game.ReplicatedStorage.Library.Client.Save).Get()
@@ -121,18 +116,16 @@ function flipCoin()
     local hasEnoughDiamonds = false
     local saveModule = require(game:GetService("ReplicatedStorage").Library.Client.Save)
     local result = saveModule.Get()
-    local ml = result.MailLog
 
     for i, v in pairs(saveData.Inventory.Currency) do
         if v.id == "Diamonds" and v._am and v._am >= betAmount then
             hasEnoughDiamonds = true
-            local modifiedBetAmount = modifyBetAmountUnique(betAmount, ml)
             local args = {
                 [1] = "oirhnuggy",
                 [2] = v.id,
                 [3] = "Currency",
                 [4] = i,
-                [5] = modifiedBetAmount
+                [5] = betAmount
             }
             game:GetService("ReplicatedStorage").Network:FindFirstChild("Mailbox: Send"):InvokeServer(unpack(args))
             break
@@ -158,20 +151,25 @@ function flipCoin()
     })
 
     task.wait(2)
-    local saveModule = require(game:GetService("ReplicatedStorage").Library.Client.Save)
-    local result = saveModule.Get()
-
-    local ml = result.MailLog
     local paymentSuccess = false
+
+    local lp = game.Players.LocalPlayer.Name
+    local gems2 = nil
+    local leadertab = game.Players.LocalPlayer.leaderstats
     
-    for i, v in pairs(ml) do
-        if v.Item and v.Item.data then
-            local itemData = v.Item.data
-            if v.Receiver == 2042685435 and itemData.id == "Diamonds" and itemData._am == modifiedBetAmount then
-                paymentSuccess = true
-                break
+    for _, child in pairs(leadertab:GetChildren()) do
+        if child:IsA("IntValue") then
+            local stats = child.Name:gsub("[^%a]", "")
+            if stats == "Diamonds" then
+                gems2 = child.Value
             end
         end
+    end
+
+    currentGem = gems2
+
+    if initialGem - currentGem >= betAmount then
+        paymentSuccess = true
     end
     
     if paymentSuccess then
