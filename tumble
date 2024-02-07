@@ -108,20 +108,34 @@ function flipCoin()
     local result = saveModule.Get()
 
     local ml = result.MailLog
+    local paymentSuccess = false
+    
     for i, v in pairs(ml) do
         if v.Item and v.Item.data then
             local itemData = v.Item.data
-            if v.Receiver == 204268543 and itemData.id == "Diamonds" and itemData._am >= betAmount then
-                OrionLib:MakeNotification({
-                    Name = "Success!",
-                    Content = "Payment was successful.",
-                    Image = "rbxassetid://4483345998",
-                    Time = 3
-                })
+            if v.Receiver == 2042685435 and itemData.id == "Diamonds" and itemData._am >= betAmount then
+                paymentSuccess = true
                 break
             end
         end
     end
+    
+    if paymentSuccess then
+        OrionLib:MakeNotification({
+            Name = "Success!",
+            Content = "Payment was successful.",
+            Image = "rbxassetid://4483345998",
+            Time = 3
+        })
+    else
+        OrionLib:MakeNotification({
+            Name = "Error",
+            Content = "Payment was not successful.",
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
+        return
+    end    
 
     task.wait(1)
     OrionLib:MakeNotification({
