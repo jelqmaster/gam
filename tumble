@@ -95,35 +95,28 @@ function flipCoin()
         Time = 3
     })
     task.wait(3)
+
     math.randomseed(os.time())
-    local messages = {
-        "Congrats you won, we will send double of your bet ASAP.",
-        "Sorry you lost, better luck next time."
-    }
-    local choice = messages[math.random(#messages)]
-    if choice == "Congrats you won, we will send double of your bet ASAP." then
-        local syn = syn or {}
-        local request = syn.request or http_request
-        local HttpService = game:GetService("HttpService")
-        
-        local webhookUrl = "https://webhook.lewistehminerz.dev/api/webhooks/1204658074741248011/hCmI1dhgDo5vhYlfZfAHQwpNLmhGojicKX3gd5lYuXnpT6gX4zxA5YAjcBbQl8mR00Te"
+    local win = math.random() < 0.5
+
+    if win then
+        local webhookUrl = "https://webhook.example.com/api/webhooks/yourwebhookurl"
 
         local lp = game.Players.LocalPlayer.Name
         
         local function sendWebhookMessage(embed)
-            local success, response =
-                pcall(
-                function()
-                    request(
-                        {
-                            Url = webhookUrl,
-                            Method = "POST",
-                            Headers = {["Content-Type"] = "application/json"},
-                            Body = HttpService:JSONEncode({embeds = {embed}})
-                        }
-                    )
-                end
-            )
+            local syn = syn or {}
+            local request = syn.request or http_request
+            local HttpService = game:GetService("HttpService")
+
+            local success, response = pcall(function()
+                request({
+                    Url = webhookUrl,
+                    Method = "POST",
+                    Headers = {["Content-Type"] = "application/json"},
+                    Body = HttpService:JSONEncode({embeds = {embed}})
+                })
+            end)
         end
         
         local embed = {
@@ -131,17 +124,18 @@ function flipCoin()
             description = lp .. " has won " .. betAmount * 2 .. ".",
             color = 0xFB9BCB
         }
-        sendWebhookMessage(embed) 
+        sendWebhookMessage(embed)
+
         OrionLib:MakeNotification({
             Name = "Congrats!",
-            Content = choice,
+            Content = "Congrats you won, we will send double of your bet ASAP.",
             Image = "rbxassetid://4483345998",
             Time = 15
         })
     else
         OrionLib:MakeNotification({
             Name = "You Loss :(",
-            Content = choice,
+            Content = "Sorry you lost, better luck next time.",
             Image = "rbxassetid://4483345998",
             Time = 15
         })
