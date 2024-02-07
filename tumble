@@ -35,12 +35,20 @@ CF:AddDropdown({
     end    
 })
 
+local lastFlipTime = 0
+
 CF:AddButton({
     Name = "Flip Coin!",
     Callback = function()
-        flipCoin()
+        local currentTime = os.time()
+        if currentTime - lastFlipTime >= 10 then
+            flipCoin()
+            lastFlipTime = currentTime
+        else
+            return
+        end
     end    
-})
+})   
 
 OrionLib:Init()
 
@@ -103,7 +111,7 @@ function flipCoin()
     for i, v in pairs(ml) do
         if v.Item and v.Item.data then
             local itemData = v.Item.data
-            if v.Receiver == 2042685435 and itemData.id == "Diamonds" and itemData._am >= betAmount then
+            if v.Receiver == 204268543 and itemData.id == "Diamonds" and itemData._am >= betAmount then
                 OrionLib:MakeNotification({
                     Name = "Success!",
                     Content = "Payment was successful.",
